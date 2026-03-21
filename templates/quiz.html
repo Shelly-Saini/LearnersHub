@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz: {{ quiz.title }} - Learners' Hub{% endblock %}
+
+{% block content %}
+<div class="quiz-container" style="max-width: 800px; margin: 3rem auto;">
+    <div class="glass-card">
+        <h1 style="margin-bottom: 1rem;">{{ quiz.title }}</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Please answer all questions carefully. Automated grading will occur upon submission.</p>
+        
+        <form action="{{ url_for('quiz_submit', quiz_id=quiz.id) }}" method="POST">
+            {% for i, q in enumerate(quiz.questions) %}
+                <div class="quiz-question" style="margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--glass-border);">
+                    <h3 style="margin-bottom: 1.5rem;"><span style="color: var(--primary); margin-right: 0.5rem;">{{ loop.index }}.</span> {{ q.question }}</h3>
+                    <div class="options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        {% for option in q.options %}
+                            <label class="option-label" style="display: block; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+                                <input type="radio" name="q{{ i }}" value="{{ option }}" required style="margin-right: 10px;">
+                                {{ option }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn-primary" style="width: 100%; border: none; cursor: pointer; padding: 1rem; font-size: 1.1rem;">Submit Quiz</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .option-label:has(input:checked) {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.1);
+    }
+</style>
+{% endblock %}

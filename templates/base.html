@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Learners' Hub LMS{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Learners' <span>Hub</span></div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('messages') }}">Messages</a></li>
+                <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li style="margin-left: 1.5rem;"><a href="{{ url_for('logout') }}" class="btn-primary" style="padding: 0.6rem 1.5rem; text-decoration: none;">Logout ({{ current_user.username }})</a></li>
+            {% else %}
+                <li style="margin-left: 1.5rem;"><a href="{{ url_for('home') }}" class="btn-primary" style="padding: 0.6rem 2.5rem; text-decoration: none;">Get Started</a></li>
+            {% endif %}
+            <li>
+                <button id="theme-toggle" class="theme-toggle" title="Toggle Light/Dark Mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Learners' Hub. All rights reserved.</p>
+    </footer>
+    <script>
+        const body = document.body;
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        // Check for saved theme
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'light') {
+            body.classList.add('light-mode');
+            themeIcon.textContent = '☀️';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            themeIcon.textContent = isLight ? '☀️' : '🌙';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        });
+    </script>
+</body>
+</html>

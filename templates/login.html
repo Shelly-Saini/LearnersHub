@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Learners' Hub{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="glass-card">
+        <div class="auth-header">
+            <h1>Welcome Back</h1>
+            <p>Ready to continue your journey?</p>
+        </div>
+        <form method="POST">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%; border: none; cursor: pointer; font-size: 1rem;">Login</button>
+        </form>
+        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted);">
+            Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--primary); text-decoration: none;">Register</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

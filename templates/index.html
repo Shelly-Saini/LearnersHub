@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Learners' Hub{% endblock %}
+
+{% block content %}
+<section class="hero-section" style="text-align: center; padding: 6rem 1rem;">
+    <h1 class="hero-title">
+        Master Your Future<br>with Learners' Hub
+    </h1>
+    <p style="font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 2.5rem;">
+        An interactive Learning Management System designed to help you track progress, 
+        ace quizzes, and achieve your educational goals in real-time.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="{{ url_for('register') }}" class="btn-primary" style="font-size: 1.1rem; padding: 0.8rem 2.5rem;">Get Started</a>
+        <a href="#courses" class="btn-secondary" style="font-size: 1.1rem; padding: 0.8rem 2.5rem; border-radius: 8px; text-decoration: none; font-weight: 600;">Browse Courses</a>
+    </div>
+</section>
+
+<section id="courses" class="courses-section" style="padding-top: 2rem;">
+    <div class="filter-controls" style="margin-bottom: 3rem; display: flex; flex-direction: column; gap: 1.5rem; align-items: center;">
+        <form action="{{ url_for('home') }}" method="GET" style="width: 100%; max-width: 600px; position: relative;">
+            <input type="text" name="search" placeholder="Search for courses (e.g. Python, Web...)" value="{{ request.args.get('search', '') }}" class="form-control search-input" style="padding: 1.2rem 1.5rem; border-radius: 50px; outline: none; transition: 0.3s; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <button type="submit" class="btn-primary" style="position: absolute; right: 8px; top: 8px; padding: 0.7rem 1.5rem; border-radius: 40px; border: none; cursor: pointer;">Search</button>
+        </form>
+        
+        <div class="categories" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="{{ url_for('home', category='All') }}" class="category-chip {% if current_category == 'All' %}active{% endif %}" style="padding: 0.5rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 20px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.3s;">All Topics</a>
+            {% for cat in categories %}
+                <a href="{{ url_for('home', category=cat) }}" class="category-chip {% if current_category == cat %}active{% endif %}" style="padding: 0.5rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 20px; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.3s;">{{ cat }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="course-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+        {% if courses %}
+            {% for course in courses %}
+                <div class="glass-card course-card" style="padding: 1.5rem;">
+                    <div class="thumbnail" style="height: 180px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        {% if course.thumbnail %}
+                            <img src="{{ url_for('static', filename='images/' + course.thumbnail) }}" alt="{{ course.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                        {% else %}
+                            <div style="font-size: 3rem; color: var(--primary);">
+                                {% if 'Python' in course.title %}🐍{% elif 'Web' in course.title %}🌐{% elif 'Data' in course.title %}📊{% else %}🎓{% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 4px;">{{ course.category }}</span>
+                        <span style="font-size: 0.75rem; background: rgba(16,185,129,0.1); color: var(--accent); padding: 0.2rem 0.6rem; border-radius: 4px;">{{ course.difficulty }}</span>
+                    </div>
+                    <h3>{{ course.title }}</h3>
+                    <div class="rating" style="color: #fbbf24; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        {% if course.avg_rating > 0 %}
+                            ★ {{ course.avg_rating }} ({{ course.reviews|length }} reviews)
+                        {% else %}
+                            No ratings yet
+                        {% endif %}
+                    </div>
+                    <p style="color: var(--text-muted); margin: 0.5rem 0 1.5rem;">{{ course.description[:100] }}...</p>
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">View Course</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: var(--glass-bg); border-radius: 20px;">
+                <p style="color: var(--text-muted);">No courses available yet. Stay tuned!</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} - Learners' Hub{% endblock %}
+
+{% block content %}
+<div class="lesson-layout" style="display: grid; grid-template-columns: 320px 1fr; gap: 2rem; max-width: 1400px; margin: 2rem auto;">
+    <!-- Sidebar -->
+    <aside class="glass-card" style="padding: 1.5rem; height: fit-content; max-height: 85vh; overflow-y: auto;">
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.2rem;">Course Content</h3>
+        {% for module in course.modules %}
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--glass-border);">{{ module.title }}</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    {% for l in module.lessons %}
+                        <a href="{{ url_for('lesson_view', lesson_id=l.id) }}" 
+                           style="padding: 0.8rem 1rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; transition: 0.3s;
+                                  {% if l.id == lesson.id %}background: var(--primary); color: white;{% else %}color: var(--text-main); background: rgba(255,255,255,0.03);{% endif %}">
+                            {% if l.video_url %}🎥{% else %}📄{% endif %} {{ l.title }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </aside>
+
+    <!-- Main Content -->
+    <main class="glass-card" style="padding: 3rem;">
+        <div style="margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <span style="color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Module: {{ lesson.module.title }}</span>
+                <a href="{{ url_for('course_detail', course_id=course.id) }}" style="text-decoration: none; color: var(--text-muted); font-size: 0.9rem;">← Course Home</a>
+            </div>
+            <h1 style="font-size: 2.8rem; margin: 0;">{{ lesson.title }}</h1>
+        </div>
+
+        {% if video_id %}
+            <div style="margin-bottom: 3rem; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); background: black;">
+                <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                    <iframe 
+                        src="https://www.youtube.com/embed/{{ video_id }}" 
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="lesson-content" style="font-size: 1.2rem; line-height: 1.8; color: var(--text-main); margin-bottom: 3rem;">
+            {{ lesson.content|safe }}
+        </div>
+
+        {% if lesson.pdf_url %}
+            <div style="margin-top: 3rem; padding: 2rem; background: rgba(16,185,129,0.05); border: 2px dashed rgba(16,185,129,0.3); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--accent);">Lesson Resources</h4>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Download the PDF guide for this lesson.</p>
+                </div>
+                <a href="{{ lesson.pdf_url }}" class="btn-primary" style="text-decoration: none; padding: 0.8rem 2rem;">Download PDF 📥</a>
+            </div>
+        {% endif %}
+
+        <!-- Lecture Comments -->
+        <div style="margin-top: 5rem; padding-top: 3rem; border-top: 1px solid var(--glass-border);">
+            <h3 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.8rem;">
+                <span>💬</span> Lecture Discussions
+            </h3>
+            
+            <div style="margin-bottom: 3rem; background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <form action="{{ url_for('add_comment', lesson_id=lesson.id) }}" method="POST">
+                    <textarea name="content" placeholder="Ask a question or share your thoughts on this lecture..." rows="3" required style="width: 100%; padding: 1rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 1rem;"></textarea>
+                    <button type="submit" class="btn-primary" style="padding: 0.6rem 1.5rem;">Post Comment</button>
+                </form>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                {% for comment in lesson.comments|sort(attribute='timestamp', reverse=True) %}
+                    <div style="display: flex; gap: 1.2rem;">
+                        <div style="width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">{{ comment.user.username[0]|upper }}</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong style="font-size: 0.95rem;">{{ comment.user.username }}</strong>
+                                <small style="color: var(--text-muted); font-size: 0.8rem;">{{ comment.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <p style="font-size: 1rem; line-height: 1.5; color: var(--text-main);">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <p style="text-align: center; color: var(--text-muted); padding: 2rem;">No comments yet. Start the conversation!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

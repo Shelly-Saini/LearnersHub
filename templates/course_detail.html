@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} - Learners' Hub{% endblock %}
+
+{% block content %}
+<div class="course-detail-container" style="max-width: 1100px; margin: 2rem auto;">
+    <!-- Course Header -->
+    <div class="glass-card" style="padding: 0; margin-bottom: 2rem; overflow: hidden;">
+        {% if course.thumbnail %}
+            <div class="course-banner" style="height: 250px; width: 100%; background: url('/static/images/{{ course.thumbnail }}') center/cover no-repeat; position: relative;">
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, var(--bg-dark), transparent);"></div>
+            </div>
+        {% endif %}
+        <div style="padding: 2.5rem; display: flex; gap: 3rem; align-items: flex-start; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 300px;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <span style="font-size: 0.8rem; background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 4px;">{{ course.category }}</span>
+                    <span style="font-size: 0.8rem; background: rgba(16,185,129,0.1); color: var(--accent); padding: 0.3rem 0.8rem; border-radius: 4px;">{{ course.difficulty }}</span>
+                </div>
+                <h1 style="font-size: 3rem; margin-bottom: 1rem;">{{ course.title }}</h1>
+                <div style="color: #fbbf24; font-size: 1.2rem; margin-bottom: 1.5rem;">
+                    ★ {{ avg_rating }} <span style="color: var(--text-muted); font-size: 1rem;">({{ course.reviews|length }} students)</span>
+                </div>
+                <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6;">{{ course.description }}</p>
+                
+                {% if enrolled %}
+                    <div style="padding: 1rem 2rem; background: rgba(16,185,129,0.1); color: var(--accent); border-radius: 8px; display: inline-block; border: 1px solid rgba(16,185,129,0.2);">Successfully Enrolled</div>
+                {% else %}
+                    <a href="{{ url_for('enroll', course_id=course.id) }}" class="btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem; text-decoration: none; display: inline-block;">Enroll Now</a>
+                {% endif %}
+            </div>
+            
+            <div style="width: 300px; background: rgba(255,255,255,0.03); padding: 2rem; border-radius: 20px; border: 1px solid var(--glass-border);">
+                <h4 style="margin-bottom: 1.5rem;">Course Meta</h4>
+                <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+                    <div><strong>Prerequisites:</strong><br><span style="color: var(--text-muted);">{{ course.prerequisites or 'None' }}</span></div>
+                    <div><strong>Modules:</strong><br><span style="color: var(--text-muted);">{{ course.modules|length }} Modules</span></div>
+                    <div><strong>Tags:</strong><br>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                            {% for tag in (course.tags or '').split(',') %}
+                                {% if tag %}
+                                    <span style="background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">#{{ tag.strip() }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem;">
+        <!-- Main Content -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+            <!-- Announcements -->
+            {% if course.announcements %}
+                <div class="glass-card" style="padding: 2.5rem; border: 1px solid rgba(245,158,11,0.2); background: rgba(245,158,11,0.03);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <span style="font-size: 1.5rem;">📢</span>
+                        <h2 style="margin: 0; color: #f59e0b;">Course Announcements</h2>
+                    </div>
+                    {% for ann in course.announcements|sort(attribute='timestamp', reverse=True) %}
+                        <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(245,158,11,0.1);">
+                            <h4 style="margin: 0 0 0.5rem;">{{ ann.title }}</h4>
+                            <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.5;">{{ ann.content }}</p>
+                            <small style="color: rgba(245,158,11,0.6); font-size: 0.75rem;">{{ ann.timestamp.strftime('%B %d, %Y') }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Curriculum -->
+            <div class="glass-card" style="padding: 2.5rem;">
+                <h2 style="margin-bottom: 2rem;">Curriculum</h2>
+            {% for module in course.modules %}
+                <div class="module" style="margin-bottom: 1.5rem; border: 1px solid var(--glass-border); border-radius: 12px; overflow: hidden;">
+                    <div style="padding: 1rem 1.5rem; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0;">{{ module.order }}. {{ module.title }}</h4>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ module.lessons|length }} Lessons</span>
+                    </div>
+                    <div>
+                        {% for lesson in module.lessons %}
+                            <div style="padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border);">
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    <span>{% if lesson.video_url %}🎥{% else %}📄{% endif %}</span>
+                                    <span>{{ lesson.title }}</span>
+                                </div>
+                                {% if enrolled %}
+                                    <a href="{{ url_for('lesson_view', lesson_id=lesson.id) }}" style="color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Open →</a>
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">Locked 🔒</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% if course.quizzes %}
+                <h3 style="margin: 2.5rem 0 1.5rem;">Assessments</h3>
+                {% for quiz in course.quizzes %}
+                    <div style="padding: 1.2rem 1.5rem; background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <span>📝</span>
+                            <strong>{{ quiz.title }}</strong>
+                        </div>
+                        {% if enrolled %}
+                            <a href="{{ url_for('quiz_view', quiz_id=quiz.id) }}" class="btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.85rem; text-decoration: none;">Take Quiz</a>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">Locked 🔒</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Discussion Forum -->
+        <div class="glass-card" style="padding: 2.5rem; grid-column: 1 / -1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="margin: 0;">Discussion Forum</h2>
+                {% if enrolled %}
+                    <button onclick="document.getElementById('new-topic-form').style.display='block'" class="btn-primary" style="padding: 0.6rem 1.5rem;">Start New Topic</button>
+                {% endif %}
+            </div>
+
+            {% if enrolled %}
+                <div id="new-topic-form" style="display: none; margin-bottom: 3rem; padding: 2rem; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--glass-border);">
+                    <h4 style="margin-bottom: 1.5rem;">Create New Discussion</h4>
+                    <form action="{{ url_for('post_forum', course_id=course.id) }}" method="POST">
+                        <input type="text" name="title" placeholder="Topic Title" required style="width: 100%; padding: 1rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 1rem;">
+                        <textarea name="content" placeholder="Share your thoughts or ask a question..." rows="4" required style="width: 100%; padding: 1rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 1rem;"></textarea>
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="submit" class="btn-primary" style="padding: 0.6rem 2rem;">Post Topic</button>
+                            <button type="button" onclick="document.getElementById('new-topic-form').style.display='none'" style="background: transparent; color: var(--text-muted); border: none; cursor: pointer;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                {% for post in course.forum_posts|sort(attribute='timestamp', reverse=True) %}
+                    <div style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <h4 style="margin: 0; color: var(--primary);">{{ post.title }}</h4>
+                            <small style="color: var(--text-muted);">{{ post.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <p style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">{{ post.content }}</p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+                            <div style="width: 24px; height: 24px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;">{{ post.user.username[0]|upper }}</div>
+                            <span style="color: var(--text-muted);">{{ post.user.username }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                        <p style="font-size: 3rem; margin-bottom: 1rem;">💬</p>
+                        <p>No discussions yet. Be the first to start one!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Reviews Sidebar -->
+        <div class="glass-card" style="padding: 2rem;">
+            <h2 style="margin-bottom: 2rem;">Student Reviews</h2>
+            
+            {% if current_user.is_authenticated %}
+                <div style="margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--glass-border);">
+                    <h4 style="margin-bottom: 1rem;">Leave a review</h4>
+                    <form action="{{ url_for('add_review', course_id=course.id) }}" method="POST">
+                        <select name="rating" style="width: 100%; padding: 0.8rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 1rem;">
+                            <option value="5">5 Stars ★★★★★</option>
+                            <option value="4">4 Stars ★★★★☆</option>
+                            <option value="3">3 Stars ★★★☆☆</option>
+                            <option value="2">2 Stars ★★☆☆☆</option>
+                            <option value="1">1 Star ★☆☆☆☆</option>
+                        </select>
+                        <textarea name="comment" placeholder="Your thoughts..." rows="3" style="width: 100%; padding: 1rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 1rem;"></textarea>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Submit Review</button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                {% for review in course.reviews %}
+                    <div style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>{{ review.user.username }}</strong>
+                            <span style="color: #fbbf24;">★ {{ review.rating }}</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">{{ review.comment }}</p>
+                        <small style="color: var(--text-muted); font-size: 0.75rem;">{{ review.date_posted.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                {% else %}
+                    <p style="text-align: center; color: var(--text-muted);">No reviews yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

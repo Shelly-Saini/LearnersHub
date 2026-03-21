@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Learners' Hub{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+        <h1 style="font-size: 2.5rem;">Welcome, {{ current_user.username }}!</h1>
+        <p style="color: var(--text-muted);">Track your learning progress and quiz scores here.</p>
+    </div>
+    <div style="text-align: right;">
+        <span style="display: block; font-size: 0.9rem; color: var(--text-muted);">Courses Enrolled</span>
+        <span style="font-size: 2rem; font-weight: 800; color: var(--primary);">{{ enrollments|length }}</span>
+    </div>
+</div>
+
+<div class="dashboard-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Enrolled Courses -->
+    <div class="glass-card">
+        <h2 style="margin-bottom: 2rem;">Enrolled Courses</h2>
+        {% if enrollments %}
+            <div class="enrollment-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                {% for enrollment in enrollments %}
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 1.5rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin-bottom: 0.5rem;">{{ enrollment.course.title }}</h3>
+                            <div class="progress-container" style="width: 200px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 1rem;">
+                                <div class="progress-bar" style="width: {{ enrollment.progress }}%; height: 100%; background: var(--primary);"></div>
+                            </div>
+                            <div class="available-quizzes" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                {% for quiz in enrollment.course.quizzes %}
+                                    <a href="{{ url_for('quiz_view', quiz_id=quiz.id) }}" style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); color: var(--accent); padding: 0.3rem 0.8rem; border-radius: 20px; text-decoration: none; border: 1px solid rgba(16, 185, 129, 0.2);">Take Quiz: {{ quiz.title }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); display: block; text-align: right; margin-bottom: 0.5rem;">{{ enrollment.progress }}% Complete</span>
+                            <a href="{{ url_for('course_detail', course_id=enrollment.course.id) }}" class="btn-primary" style="font-size: 0.9rem; text-decoration: none;">Course Content</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: var(--text-muted); text-align: center; padding: 2rem;">You haven't enrolled in any courses yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Performance Analytics -->
+    <div class="glass-card">
+        <h2 style="margin-bottom: 2rem;">Performance</h2>
+        <canvas id="performanceChart" style="width: 100%; height: 250px;"></canvas>
+        
+        <div class="recent-scores" style="margin-top: 2rem;">
+            <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-muted);">Recent Quiz Results</h3>
+            {% if results %}
+                {% for result in results[:3] %}
+                    <div style="display: flex; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid var(--glass-border);">
+                        <span>{{ result.quiz.title }}</span>
+                        <span style="font-weight: 600; color: var(--accent);">{{ (result.score / result.total_questions * 100)|round|int }}%</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="font-size: 0.9rem; color: var(--text-muted);">No quiz data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const labels = [{% for r in results %}"{{ r.date_taken.strftime('%d %b') }}"{% if not loop.last %}, {% endif %}{% endfor %}];
+        const scores = [{% for r in results %}{{ (r.score / r.total_questions * 100)|round|int }}{% if not loop.last %}, {% endif %}{% endfor %}];
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Quiz Scores',
+                    data: scores,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#6366f1'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

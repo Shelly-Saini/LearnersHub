@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Learners' Hub{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 450px; margin: 4rem auto;">
+    <div class="glass-card" style="padding: 3rem; position: relative; overflow: hidden;">
+        <!-- Auth Toggle -->
+        <div style="display: flex; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 0.3rem; margin-bottom: 2.5rem; position: relative;">
+            <div id="toggle-bg" style="position: absolute; width: calc(50% - 0.3rem); height: calc(100% - 0.6rem); background: var(--primary); border-radius: 9px; transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);"></div>
+            <button onclick="toggleAuth('login')" id="btn-login" style="flex: 1; z-index: 1; border: 0; background: transparent; color: white; padding: 0.8rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">Login</button>
+            <button onclick="toggleAuth('signup')" id="btn-signup" style="flex: 1; z-index: 1; border: 0; background: transparent; color: var(--text-muted); padding: 0.8rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2 style="margin-bottom: 0.5rem; font-size: 2rem;">Welcome Back</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Sign in to continue your learning journey.</p>
+            <form action="{{ url_for('login') }}" method="POST">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Email Address</label>
+                    <input type="email" name="email" required style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: white; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'">
+                </div>
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Password</label>
+                    <input type="password" name="password" required style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: white; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem;">Login Now</button>
+            </form>
+        </div>
+
+        <!-- Signup Form (Hidden by default) -->
+        <div id="signup-form" style="display: none;">
+            <h2 style="margin-bottom: 0.5rem; font-size: 2rem;">Create Account</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Join thousands of students worldwide.</p>
+            <form action="{{ url_for('register') }}" method="POST">
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Full Name</label>
+                    <input type="text" name="username" required style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: white; outline: none;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Email Address</label>
+                    <input type="email" name="email" required style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: white; outline: none;">
+                </div>
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Create Password</label>
+                    <input type="password" name="password" required style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 10px; color: white; outline: none;">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1rem; background: var(--accent);">Get Started</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAuth(type) {
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const toggleBg = document.getElementById('toggle-bg');
+    const btnLogin = document.getElementById('btn-login');
+    const btnSignup = document.getElementById('btn-signup');
+
+    if (type === 'signup') {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        toggleBg.style.transform = 'translateX(100%)';
+        btnSignup.style.color = 'white';
+        btnLogin.style.color = 'var(--text-muted)';
+    } else {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        toggleBg.style.transform = 'translateX(0)';
+        btnLogin.style.color = 'white';
+        btnSignup.style.color = 'var(--text-muted)';
+    }
+}
+
+// Check URL hash for initial state
+window.onload = () => {
+    if (window.location.hash === '#signup') toggleAuth('signup');
+};
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - Learners' Hub{% endblock %}
+
+{% block content %}
+<div class="messages-container" style="max-width: 900px; margin: 2rem auto;">
+    <div class="glass-card" style="padding: 2.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+            <h1 style="margin: 0;">Messages</h1>
+            <button onclick="document.getElementById('new-msg-modal').style.display='flex'" class="btn-primary" style="padding: 0.6rem 1.5rem;">New Message</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for item in inbox %}
+                <a href="{{ url_for('chat', user_id=item.partner.id) }}" style="text-decoration: none; color: inherit; display: flex; gap: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                    <div style="width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: white;">
+                        {{ item.partner.username[0]|upper }}
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>{{ item.partner.username }}</strong>
+                            <small style="color: var(--text-muted);">{{ item.last_msg.timestamp.strftime('%H:%M') if item.last_msg else '' }}</small>
+                        </div>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {% if item.last_msg.sender_id == current_user.id %}You: {% endif %}
+                            {{ item.last_msg.content }}
+                        </p>
+                    </div>
+                    {% if not item.last_msg.is_read and item.last_msg.recipient_id == current_user.id %}
+                        <div style="width: 10px; height: 10px; background: var(--accent); border-radius: 50%; align-self: center;"></div>
+                    {% endif %}
+                </a>
+            {% else %}
+                <div style="text-align: center; padding: 5rem; color: var(--text-muted);">
+                    <p style="font-size: 4rem; margin-bottom: 1rem;">✉️</p>
+                    <p>No conversations yet. Start messaging your instructors or peers!</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- New Message Modal -->
+<div id="new-msg-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div class="glass-card" style="width: 450px; padding: 2.5rem; position: relative;">
+        <h3 style="margin-bottom: 1.5rem;">Send a Message</h3>
+        <form action="{{ url_for('messages') }}" method="POST">
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Recipient ID (or handle search in future)</label>
+                <input type="number" name="recipient_id" placeholder="Enter User ID" required style="width: 100%; padding: 1rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 8px;">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <textarea name="content" placeholder="Type your message..." rows="4" required style="width: 100%; padding: 1rem; background: var(--bg-dark); color: white; border: 1px solid var(--glass-border); border-radius: 8px;"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn-primary" style="flex: 1;">Send Message</button>
+                <button type="button" onclick="document.getElementById('new-msg-modal').style.display='none'" style="flex: 1; background: transparent; border: 1px solid var(--glass-border); color: white; border-radius: 8px; cursor: pointer;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
